@@ -1,0 +1,70 @@
+
+---
+title: "Pseudotime analysis of interfollicular epidermal cells in UW sample using Monocle 3"
+author: "Suoqin Jin"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output: html_document
+mainfont: Arial
+vignette: >
+  %\VignetteIndexEntry{Pseudotime analysis of interfollicular epidermal cells in UW sample}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+  ```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  root.dir = './'
+)
+```
+
+This walkthrough performs pseudotime analysis of interfollicular epidermal cells in unwounded (UW) sample using Monocle 3.
+
+## Load the required libraries
+```{r message=FALSE,warning=FALSE}
+# install monocle 3 R package: https://cole-trapnell-lab.github.io/monocle3/docs/installation/
+library("Seurat", lib.loc="/Users/suoqinjin/Documents/Rlibrary") # Seurat version 2.3.4
+library(monocle3)
+library(ggplot2)
+```
+
+## load data
+```{r}
+setwd("/Users/suoqinjin/Google Drive/projects/project4_Dai/revisionR1/codes_submit")
+load("seurat_pseudotimeAnalysis_UW_IFE.RData")
+expr_matrix <- w10x_UW@raw.data
+counts <- expr_matrix[w10x_UW@var.genes,]
+```
+
+## Make the CDS object
+```{r}
+sample_sheet = data.frame(row.names=colnames(expr_matrix),clusters=w10x_UW@meta.data$clusters)
+gene_annotation <- data.frame(row.names=rownames(counts), gene_short_name=rownames(counts))
+cds <- new_cell_data_set(counts,
+                         cell_metadata = sample_sheet,
+                         gene_metadata = gene_annotation)
+```
+
+## Run Monocle 3
+```{r, results='asis'}
+cds <- preprocess_cds(cds, num_dim = 100)
+cds@reducedDims$UMAP <- as.matrix(w10x_UW@dr$umap@cell.embeddings)
+cds <- cluster_cells(cds,reduction_method = "UMAP")
+cds <- learn_graph(cds,use_partition = F)
+```
+
+## Plot inferred trajectories
+```{r, fig.width=5.5,fig.height = 4, fig.wide = TRUE, fig.align = "center"}
+plot_cells(cds, color_cells_by="clusters",graph_label_size = 1, label_cell_groups = F,trajectory_graph_segment_size =0.5)+scale_color_manual(values = c('#ff1622','#00b938','#3657df','#603A91','#F29233','#D6B239'))
+```
+``
+
+## Save Monocle object
+```{r}
+save(cds, file = "pseudotime_monocle3_ump_UW_IFE.RData")
+
+```
+
+
+

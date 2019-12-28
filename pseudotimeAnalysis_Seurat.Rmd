@@ -1,0 +1,106 @@
+
+---
+title: "UMAP projection of interfollicular epidermal cells in unwounded (UW) sample"
+author: "Suoqin Jin"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output: html_document
+mainfont: Arial
+vignette: >
+  %\VignetteIndexEntry{Pseudotime analysis of interfollicular epidermal cells in UW sample}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+  ```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  root.dir = './'
+)
+```
+
+This walkthrough performs UMAP projection of interfollicular epidermal cells in unwounded (UW) sample, including proliferative and non-proliferative basal cells and spinous cells
+
+The reduced UMAP space will be saved and then used for pseudotime analysis in scEpath (https://github.com/sqjin/scEpath)
+
+
+## Load the required libraries
+```{r message=FALSE,warning=FALSE}
+library("Seurat", lib.loc="/Users/suoqinjin/Documents/Rlibrary") # Seurat version 2.3.4
+library(sva) # sva version 3.30.1
+```
+
+## Load the raw count data and cell group information
+
+```{r}
+setwd("/Users/suoqinjin/Google Drive/projects/project4_Dai/revisionR1/codes_submit")
+load("data_pseudotime.RData")
+```
+
+## Setup the Seurat Object
+```{r}
+# Initialize the Seurat object with the raw (non-normalized data).
+w10x_UW <- CreateSeuratObject(raw.data = data_pseudotime$raw.data, meta.data = data_pseudotime$meta.data)
+# set cell identity
+w10x_UW <- SetAllIdent(w10x_UW, id = 'clusters')
+```
+
+## Normalizing the data
+```{r, results='asis'}
+w10x_UW <- NormalizeData(object = w10x_UW, normalization.method = "LogNormalize", scale.factor = 10000)
+```
+
+## Perform batch correction
+```{r}
+# batch-correction using ComBat
+batchid = rep(1,length(w10x_UW@meta.data$batch))
+batchid[w10x_UW@meta.data$batch=="bs_2"] = 2
+names(batchid) =colnames(w10x_UW@data)
+m = as.data.frame(as.matrix(w10x_UW@data))
+m = m[rowSums(m)>0,]
+com = ComBat(as.matrix(m), batchid, prior.plots=FALSE, par.prior=TRUE)
+w10x_UW@data = Matrix(as.matrix(com))
+```
+
+## Find highly variable genes and scale the data
+```{r}
+w10x_UW <- FindVariableGenes(object = w10x_UW, mean.function = ExpMean, dispersion.function = LogVMR, x.low.cutoff = 0.01, x.high.cutoff = 4, y.cutoff = 0.6, do.plot = FALSE)
+w10x_UW <- ScaleData(w10x_UW)
+```
+
+## Run PCA
+```{r, fig.width=5,fig.height = 3, fig.wide = TRUE, fig.align = "center"}
+w10x_UW <- RunPCA(w10x_UW, pc.genes = w10x_UW@var.genes, pcs.compute = 40, do.print = FALSE)
+PCElbowPlot(w10x_UW, num.pc = 40)
+```
+
+## Run UMAP
+```{r}
+# use top six PCs with significant deviations
+w10x_UW <- RunUMAP(w10x_UW, reduction.use = "pca", dims.use = 1:6,min_dist = 0.35)
+```
+
+## Visualize cells in the reduced UMAP space (colored by clusters)
+```{r, fig.width=5,fig.height = 3.5,  fig.wide = TRUE, fig.align = "center"}
+color.use <- c('#ff1622','#00b938','#3657df','#603A91','#F29233','#D6B239')
+DimPlot(w10x_UW, reduction.use = "umap", cols.use = color.use, pt.size = 0.2)
+```
+
+## Visualize cells in the reduced UMAP space (colored by sample id)
+```{r, fig.width=4.5,fig.height = 3.5,  fig.wide = TRUE, fig.align = "center"}
+DimPlot(w10x_UW, reduction.use = "umap",pt.size = 0.2, group.by = "batch", cols.use = c("#F8766D","#C49A00"))
+```
+
+## Save data for further pseudotime analysis in scEpath and Monocle 3
+```{r}
+# save data for pseudotime analysis in scEpath
+write.table(w10x_UW@dr$umap@cell.embeddings,file = "projectedData_ump_UW_IFE.txt",sep = '\t')
+write.table(w10x_UW@var.genes, file = "HVG_UW_IFE.txt", sep ="\t", row.names = F, col.names = F)
+write.table(as.matrix(w10x_UW@raw.data),file = "rawData_UW_IFE.txt",sep = '\t')
+write.table(w10x_UW@ident, file = "clusters_UW_IFE.txt",sep = '\t')
+# save the workspace for pseudotime analysis in Monocle 3
+save(w10x_UW, file = "seurat_pseudotimeAnalysis_UW_IFE.RData")
+
+```
+
+
