@@ -5,9 +5,9 @@ This repository provides the codes and walkthroughs to reproduce the pseudotime 
 
 We provides three walkthroughs to reproduce the pseudotime analysis using both scEpath and Monocle 3. 
 
-- Performs UMAP projection of interfollicular epidermal cells using Seurat v2: see [(Walkthrough)](https://htmlpreview.github.io/?https://github.com/sqjin/codes_CellReports2019/blob/master/pseudotimeAnalysis_Seurat.html)
-- Run pseudotime analysis using scEpath: see [(Walkthrough)](https://htmlpreview.github.io/?https://github.com/sqjin/codes_CellReports2019/blob/master/pseudotimeAnalysis_scEpath.html)
-- Run pseudotime analysis using Monocle 3: see [(Walkthrough)](https://htmlpreview.github.io/?https://github.com/sqjin/codes_CellReports2019/blob/master/pseudotimeAnalysis_Monocl3.html)
+- Performs UMAP projection of interfollicular epidermal cells using Seurat v2: see [Walkthrough](https://htmlpreview.github.io/?https://github.com/sqjin/codes_CellReports2019/blob/master/pseudotimeAnalysis_Seurat.html)
+- Run pseudotime analysis using scEpath: see [Walkthrough](https://htmlpreview.github.io/?https://github.com/sqjin/codes_CellReports2019/blob/master/pseudotimeAnalysis_scEpath.html)
+- Run pseudotime analysis using Monocle 3: see [Walkthrough](https://htmlpreview.github.io/?https://github.com/sqjin/codes_CellReports2019/blob/master/pseudotimeAnalysis_Monocl3.html)
 
 ## Help
 If you have any problems, comments or suggestions, please contact us at Suoqin Jin (suoqin.jin@uci.edu).
