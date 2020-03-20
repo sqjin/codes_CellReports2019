@@ -1,4 +1,4 @@
-# Codes and Walkthroughs for the pseudotime analysis in our paper (Haensel and Jin et al. 2020)
+# Codes and Walkthroughs for the pseudotime analysis in our Cell Reports paper (Haensel and Jin et al. 2020)
 This repository provides the codes and walkthroughs to reproduce the pseudotime analysis in our paper published in Cell Reports ([Haensel and Jin et al. 2020](https://doi.org/10.1016/j.celrep.2020.02.091)).
 
 ## Instruction
